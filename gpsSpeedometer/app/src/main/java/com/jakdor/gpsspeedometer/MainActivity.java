@@ -51,12 +51,7 @@ public class MainActivity extends AppCompatActivity {
         }
     };
     private boolean mVisible;
-    private final Runnable mHideRunnable = new Runnable() {
-        @Override
-        public void run() {
-            hide();
-        }
-    };
+    private final Runnable mHideRunnable = () -> hide();
 
     /**
      * Touch listener handling setting button clicks, lunches settings activity
@@ -66,20 +61,17 @@ public class MainActivity extends AppCompatActivity {
         settingsClick = true;
     }
 
-    private final View.OnTouchListener mDelayHideTouchListener = new View.OnTouchListener() {
-        @Override
-        public boolean onTouch(View view, MotionEvent motionEvent) {
-            if(settingsClick) {
-                Intent preferencesIntent = new Intent(MainActivity.this, AppPreferencesActivity.class);
-                startActivity(preferencesIntent);
-                settingsClick = false;
-            }
-            if (AUTO_HIDE) {
-                delayedHide(AUTO_HIDE_DELAY_MILLIS);
-            }
-
-            return false;
+    private final View.OnTouchListener mDelayHideTouchListener = (View view, MotionEvent motionEvent) -> {
+        if (settingsClick) {
+            Intent preferencesIntent = new Intent(MainActivity.this, AppPreferencesActivity.class);
+            startActivity(preferencesIntent);
+            settingsClick = false;
         }
+        if (AUTO_HIDE) {
+            delayedHide(AUTO_HIDE_DELAY_MILLIS);
+        }
+
+        return false;
     };
 
     private GpsLocator gpsLocator;
@@ -111,13 +103,14 @@ public class MainActivity extends AppCompatActivity {
      * Updates GUI with current info
      */
     private void updateGUI(){
-        ((TextView)mContentView).setText(String.format(Locale.ENGLISH, "%f\n%f\n%f\n\n%f\n%f\n%d",
+        ((TextView)mContentView).setText(String.format(Locale.ENGLISH, "%f\n%f\n%f\n\n%f\n%f\n%d\n\n%s",
                 gpsLocator.getLatitude(),
                 gpsLocator.getLongitude(),
                 gpsLocator.getAltitude(),
                 locationCalculator.getSpeed(prefUnitSystem == 0),
                 locationCalculator.getDistanceSum(false),
-                locationCalculator.getTimer()));
+                locationCalculator.getTimer(),
+                locationCalculator.getAccelerometerData()));
     }
 
     @Override
@@ -131,17 +124,12 @@ public class MainActivity extends AppCompatActivity {
         mContentView = findViewById(R.id.fullscreen_content);
 
         // Set up the user interaction to manually show or hide the system UI.
-        mContentView.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View view) {
-                toggle();
-            }
-        });
+        mContentView.setOnClickListener((View view) -> toggle());
 
         findViewById(R.id.dummy_button).setOnTouchListener(mDelayHideTouchListener);
 
         gpsLocator = new GpsLocator(this);
-        locationCalculator = new LocationCalculator(gpsLocator);
+        locationCalculator = new LocationCalculator(gpsLocator, this);
         preferences = PreferenceManager.getDefaultSharedPreferences(this);
 
         timerHandler.postDelayed(timerRunnable, 0);

@@ -5,9 +5,7 @@
     android:background="@color/black_overlay"
     tools:context="com.jakdor.gpsspeedometer.MainActivity">
 
-    <!-- The primary full-screen view. This can be replaced with whatever view
-         is needed to present your content, e.g. VideoView, SurfaceView,
-         TextureView, etc. -->
+    <!-- The primary full-screen view -->
 
     <TextView
         android:id="@+id/fullscreen_content"
@@ -16,8 +14,8 @@
         android:gravity="center"
         android:keepScreenOn="true"
         android:text="@string/dummy_content"
-        android:textColor="@android:color/background_light"
-        android:textSize="50sp"
+        android:textColor="@color/text_white"
+        android:textSize="36sp"
         android:textStyle="bold"
         android:focusableInTouchMode="true" />
 
@@ -46,9 +44,9 @@
                 android:layout_height="wrap_content"
                 android:layout_weight="1"
                 android:text="@string/dummy_button"
-                android:textColorLink="@android:color/background_light"
-                tools:textColor="@android:color/background_light"
-                android:textColor="@android:color/background_light" />
+                android:textColorLink="@color/text_white"
+                tools:textColor="@color/text_white"
+                android:textColor="@color/text_white" />
 
         </LinearLayout>
 

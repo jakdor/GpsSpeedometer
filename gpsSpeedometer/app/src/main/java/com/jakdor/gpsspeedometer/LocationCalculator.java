@@ -1,12 +1,19 @@
 package com.jakdor.gpsspeedometer;
 
+import android.content.Context;
+import android.hardware.Sensor;
+import android.hardware.SensorEvent;
+import android.hardware.SensorEventListener;
+import android.hardware.SensorManager;
+
+import java.util.Locale;
 import java.util.Timer;
 import java.util.TimerTask;
 
 /**
  * Class for processing raw gps data
  */
-class LocationCalculator {
+class LocationCalculator implements SensorEventListener {
 
     private final int UPDATE_TIME = 1000;
 
@@ -28,10 +35,18 @@ class LocationCalculator {
 
     private long timer = 0;
 
+    private boolean stopLock = false;
+
     /**
      * Uses GpsLocator class to get raw data, lunches update method on set rate
      */
-    LocationCalculator(final GpsLocator gpsLocator){
+    LocationCalculator(final GpsLocator gpsLocator, Context context){
+
+        //initialize accelerometer
+        SensorManager sensorManager = (SensorManager) context.getSystemService(Context.SENSOR_SERVICE);
+        Sensor accelerometerSensor = sensorManager.getDefaultSensor(Sensor.TYPE_ACCELEROMETER);
+        sensorManager.registerListener(this, accelerometerSensor, SensorManager.SENSOR_DELAY_NORMAL);
+
         Timer timer = new Timer();
         timer.scheduleAtFixedRate(new TimerTask() {
             @Override
@@ -54,6 +69,7 @@ class LocationCalculator {
         if(lastLatitude == 0 && lastLongitude == 0){
             lastLatitude = latitude;
             lastLongitude = longitude;
+            return;
         }
 
         if(latitude != lastLatitude && longitude != lastLongitude) { //todo take gps accuracy into account
@@ -61,7 +77,11 @@ class LocationCalculator {
             calculateDistanceAdvance(latitude, longitude);
             calculateSpeed();
 
-            if(distance > 0.4) { //discard random jitter
+            if(stopLock && accelerating){ //take accelerometer into account
+                stopLock = false;
+            }
+
+            if(distance > 0.4 && !stopLock) { //discard random jitter
                 distanceSum += distance;
                 calculateTime();
             }
@@ -81,9 +101,10 @@ class LocationCalculator {
         }
         else{
             ++speedStopCounter;
-            if(speedStopCounter == 4){
+            if(speedStopCounter == 4){ //full stop
                 avrCurrentSpeed = 0;
                 speedStopCounter = 0;
+                stopLock = true;
             }
         }
     }
@@ -207,5 +228,53 @@ class LocationCalculator {
 
     long getTimer(){
         return timer;
+    }
+
+    String getAccelerometerData(){
+        return String.format(Locale.ENGLISH, "x: %f\ny: %f\nz: %f \n acc: %b",
+                accValues[0], accValues[1], accValues[2], accelerating);
+    }
+
+    /**
+     * Detect acceleration
+     */
+    private boolean accelerating = false;
+    private float accValues[] = { 0.0f, 0.0f, 0.0f };
+    private float lastAccValues[] = { 0.0f, 0.0f, 0.0f };
+    private long lastUpdate = 0;
+
+    @Override
+    public void onSensorChanged(SensorEvent sensorEvent) {
+        final long ACCELERATION_THRESHOLD = 20;
+
+        Sensor sensor = sensorEvent.sensor;
+
+        if(sensor.getType() == Sensor.TYPE_ACCELEROMETER){
+            accValues[0] = sensorEvent.values[0];
+            accValues[1] = sensorEvent.values[1];
+            accValues[2] = sensorEvent.values[2];
+
+            long curTime = System.currentTimeMillis();
+
+            if ((curTime - lastUpdate) > 100) {
+                long diffTime = (curTime - lastUpdate);
+                lastUpdate = curTime;
+
+                float speed = Math.abs(accValues[0] + accValues[1] + accValues[2] -
+                        lastAccValues[0] - lastAccValues[1] - lastAccValues[2])/ diffTime * 10000;
+
+
+                accelerating = speed > ACCELERATION_THRESHOLD;
+
+                lastAccValues[0] = accValues[0];
+                lastAccValues[1] = accValues[1];
+                lastAccValues[2] = accValues[2];
+            }
+        }
+    }
+
+    @Override
+    public void onAccuracyChanged(Sensor sensor, int i) {
+
     }
 }
