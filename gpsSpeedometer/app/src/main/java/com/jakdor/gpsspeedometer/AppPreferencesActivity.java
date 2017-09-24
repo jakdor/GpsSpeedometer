@@ -41,35 +41,5 @@ public class AppPreferencesActivity extends PreferenceActivity {
             super.onCreate(savedInstanceState);
             addPreferencesFromResource(R.xml.pref_general);
         }
-
-        @Override
-        public void onResume() { //end fragment onBack pressed
-            super.onResume();
-            //handleBackButtonPress();
-        }
-
-        private void handleBackButtonPress(){
-            try {
-                getView().setFocusableInTouchMode(true);
-            }
-            catch (java.lang.NullPointerException e){
-                Log.e("Exception", "PreferenceFragment setFocusable problem: " + e.getMessage());
-            }
-            getView().requestFocus();
-            getView().setOnKeyListener(new View.OnKeyListener() {
-                @Override
-                public boolean onKey(View v, int keyCode, KeyEvent event) {
-
-                    if (event.getAction() == KeyEvent.ACTION_UP && keyCode == KeyEvent.KEYCODE_BACK){
-
-                        getActivity().getFragmentManager().popBackStack();
-                        getActivity().finish();
-                        return true;
-                    }
-                    return false;
-                }
-            });
-        }
-
     }
 }
