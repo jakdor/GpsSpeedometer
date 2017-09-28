@@ -107,7 +107,7 @@ public class MainActivity extends AppCompatActivity {
                 gpsLocator.getLatitude(),
                 gpsLocator.getLongitude(),
                 gpsLocator.getAltitude(),
-                locationCalculator.getSpeed(prefUnitSystem == 0),
+                locationCalculator.getSpeed(prefUnitSystem == 1),
                 locationCalculator.getDistanceSum(false),
                 locationCalculator.getTimer(),
                 locationCalculator.getAccelerometerData()));

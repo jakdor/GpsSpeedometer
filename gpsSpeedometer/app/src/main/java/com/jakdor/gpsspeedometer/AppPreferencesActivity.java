@@ -6,9 +6,6 @@ import android.app.FragmentTransaction;
 import android.os.Bundle;
 import android.preference.PreferenceActivity;
 import android.preference.PreferenceFragment;
-import android.util.Log;
-import android.view.KeyEvent;
-import android.view.View;
 
 /**
  * Class defining AppPreferencesActivity(settings screen) behaviour

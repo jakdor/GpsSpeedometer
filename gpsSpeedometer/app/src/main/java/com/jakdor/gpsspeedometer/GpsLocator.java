@@ -36,7 +36,7 @@ class GpsLocator {
         try {
             locationManager.requestLocationUpdates(LocationManager.GPS_PROVIDER, LOCATION_REFRESH_TIME,
                     LOCATION_REFRESH_DISTANCE, mLocationListener);
-            location = locationManager.getLastKnownLocation(bestProvider);
+            //location = locationManager.getLastKnownLocation(bestProvider);
         }
         catch (SecurityException e){
             Log.e("Exception", "GPS permission problem: " + e.toString());
